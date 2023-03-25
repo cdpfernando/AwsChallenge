@@ -20,6 +20,5 @@ namespace AwsChallenge
             services.AddTransient<IContactRepository, ContactRepository>();
             services.AddTransient<IContactService, ContactService>();
         }
-
     }
 }
