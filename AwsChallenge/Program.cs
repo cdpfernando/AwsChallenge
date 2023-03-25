@@ -1,54 +1,42 @@
-using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
+using AwsChallenge;
+using AwsChallenge.Application.Interfaces;
+using AwsChallenge.Models;
+using AwsChallenge.Models.v1.Contacts;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("AwsChallenge");
-
 // Add services to the container.
-builder.Services.AddDbContext<ContactDbContext>(options =>
-                options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
-            );
-
-
+builder.Services.AddDatabase(builder.Configuration);
+builder.Services.AddServices();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddMvcCore();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-// Configure the HTTP request pipeline.
 
+// Configure the HTTP request pipeline.
 app.MapSwagger();
 app.UseSwaggerUI();
 
-app.MapGet("api/v1/contatos", async (ContactDbContext db) =>
-    await db.Contacts.ToListAsync());
-
-app.MapPost("api/v1/contatos", async (Contact contact, ContactDbContext db) =>
-{
-    db.Contacts.Add(contact);
-    await db.SaveChangesAsync();
-    return Results.Ok();
-}
-).Produces(StatusCodes.Status200OK);
+AddEndpoints(app);
 
 app.Run();
 
-
-public class Contact
+static void AddEndpoints(WebApplication app)
 {
-    [JsonPropertyName("id")]
-    public long Id { get; set; }
-    [JsonPropertyName("nome")]
-    public string Name { get; set; }
-    [JsonPropertyName("telefone")]
-    public string PhoneNumber { get; set; }
-}
+    const string preffix = "api";
+    const string version = "v1";
 
-class ContactDbContext : DbContext
-{
-    public ContactDbContext(DbContextOptions<ContactDbContext> options)
-    : base(options) { }
+    app.MapGet($"{preffix}/{version}/contatos", async (IContactService service) =>
+    {
+        var result = await service.GetAll();
+        return result.AsApiResponse();
+    });
 
-    public DbSet<Contact> Contacts => Set<Contact>();
+    app.MapPost($"{preffix}/{version}/contatos", async (ContactRequest request, IContactService service) =>
+    {
+        await service.Insert(request.AsEntity());
+        return Results.Ok();
+    }
+    ).Produces(StatusCodes.Status200OK);
 }
