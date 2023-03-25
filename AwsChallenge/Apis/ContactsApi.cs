@@ -2,7 +2,7 @@
 using AwsChallenge.Models;
 using AwsChallenge.Models.v1.Contacts;
 
-namespace AwsChallenge
+namespace AwsChallenge.Apis
 {
     public static class ContactsApi
     {
