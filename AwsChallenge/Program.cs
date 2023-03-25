@@ -21,11 +21,10 @@ var app = builder.Build();
 app.MapSwagger();
 app.UseSwaggerUI();
 
-app.MapGet("/contatos", async (ContactDbContext db) =>
+app.MapGet("api/v1/contatos", async (ContactDbContext db) =>
     await db.Contacts.ToListAsync());
 
-
-app.MapPost("/contatos", async (Contact contact, ContactDbContext db) =>
+app.MapPost("api/v1/contatos", async (Contact contact, ContactDbContext db) =>
 {
     db.Contacts.Add(contact);
     await db.SaveChangesAsync();
@@ -38,16 +37,6 @@ app.Run();
 
 public class Contact
 {
-    public Contact(string name, string phoneNumber)
-    {
-        Name = name;
-        PhoneNumber = phoneNumber;
-    }
-    public Contact()
-    {
-
-    }
-
     [JsonPropertyName("id")]
     public long Id { get; set; }
     [JsonPropertyName("nome")]
